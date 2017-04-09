@@ -6,15 +6,13 @@ import urllib2
 import mysql.connector
 
 from mysql.connector import Error
-from django.http import HttpResponse
-from django.shortcuts import render
 
 ALL_GAME = 'http://betting.gg11.bet/api/sportmatch/Get?sportID=2357'
 
 
 def sql_insert(*args):
     print(args)
-
+    """
     try:
         conn = mysql.connector.connect(host='k72gsi3s.beget.tech',
                                        database='k72gsi3s_dj2',
@@ -41,7 +39,7 @@ def sql_insert(*args):
     finally:
         cursor.close()
         conn.close()
-
+    """
 
 def main():
     new_json_data = parse_courses(ALL_GAME)
@@ -93,23 +91,29 @@ def main():
         time.sleep(0.1)
 
 
-def write_file_json_data(old_json, new_json):
-    pass
 
 
 def parse_courses(url):
     opener = urllib2.build_opener()
     opener.addheaders = [('User-Agent', 'Mozilla/5.0')]
 
-    f = opener.open(url)
+    print ("pars")
+    try:
+        f = opener.open(url)
+        print ("f")
+    except:
+        print ("not f")
+        return []
     f_read = f.read()
 
     i = 0
     list = []
 
     try:
+        print ("2")
         f_json = json.loads(f_read)
         while True:
+            print ("1")
             try:
                 list.append({
                     "DateOfMatchLocalized": str(f_json[i]["DateOfMatchLocalized"]["Value"]),
@@ -124,13 +128,15 @@ def parse_courses(url):
                     "Category": f_json[i]["Category"]["Name"],
                     "SportType": f_json[i]["SportType"]["Name"],
                 })
+                print ("list - 1")
                 i += 1
             except:
                 break
 
     except ValueError:
         print("error json structure")
-
+    print("list end")
+    opener.close()
     return list
 
 
