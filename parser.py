@@ -146,6 +146,8 @@ def main():
         id_match_select = select_sql_db(
             'select `id`, `number` from `matchid` where number = "' + str(new_elem["MatchID"]) + '"')
 
+        ###############################
+        # MatchID
         # Проверяем имеется ли ид матча если {} занчить нет надо добавить
         if id_match_select == {}:
             print("id match is none")
@@ -156,7 +158,8 @@ def main():
             id_match_select = select_sql_db(
                 'select `id`, `number` from `matchid` where number = "' + str(new_elem["MatchID"]) + '"')
 
-        # проверяем дату по матчу
+        ############################################
+        # dateofmatchlocalized по матчу
         id_match = id_match_select.get(str(new_elem["MatchID"]))
         date_select = select_sql_db(
             'SELECT `ID_MatchID`, `name_date` FROM `dateofmatchlocalized` WHERE name_date = "'
@@ -171,8 +174,8 @@ def main():
         ############################################
         # MarketsCount
         date_select = select_sql_db(
-                'SELECT `ID_MatchID`, `number` FROM `marketscount` WHERE number = '
-                + str(new_elem["MarketsCount"]) + ' and ID_MatchID = "' + str(new_elem["MatchID"]) + '"')
+            'SELECT `ID_MatchID`, `number` FROM `marketscount` WHERE number = '
+            + str(new_elem["MarketsCount"]) + ' and ID_MatchID = "' + str(new_elem["MatchID"]) + '"')
 
         if date_select == {}:
             print("MarketsCount - ", date_select)
@@ -190,6 +193,26 @@ def main():
             print("MarketID - ", date_select)
             sql_insert('INSERT INTO `marketid`(`ID_MatchID`, `number`) '
                        'VALUES (' + str(id_match) + ',\"' + str(new_elem["MarketID"]) + '\")')
+
+        ############################################
+        # Value_0 - Title_0
+        find_title_dict = dict_title.get(str(new_elem["Title_0"]).upper())
+        date_select = select_sql_db('SELECT `id_MatchID` ,  `id_TitleID`, `number` FROM `value` WHERE number = '
+                                    + str(new_elem["Value_0"]) + ' and id_MatchID = ' + str(id_match)
+                                    + ' and id_TitleID = ' + str(find_title_dict) + '')
+        if date_select == {}:
+            sql_insert('INSERT INTO `value`(`id_MatchID`, `id_TitleID`, `number`) '
+                       'VALUES (' + str(id_match) + ',' + str(find_title_dict) + ',' + str(new_elem["Value_0"]) + ' )')
+
+        # Value_1 ############################################
+        find_title_dict = dict_title.get(str(new_elem["Title_1"]).upper())
+        date_select = select_sql_db('SELECT `id_MatchID` ,  `id_TitleID`, `number` FROM `value` WHERE number = '
+                                    + str(new_elem["Value_1"]) + ' and id_MatchID = ' + str(id_match) +
+                                    ' and id_TitleID = ' + str(find_title_dict) + '')
+
+        if date_select == {}:
+            sql_insert('INSERT INTO `value`(`id_MatchID`, `id_TitleID`, `number`) '
+                       'VALUES (' + str(id_match) + ',' + str(find_title_dict) + ',' + str(new_elem["Value_1"]) + ')')
 
     """
     sql_insert(
@@ -221,10 +244,31 @@ def main():
             for old_elem in old_json_data:
                 for new_elem in new_json_data:
                     if new_elem["MatchID"] == old_elem["MatchID"] and new_elem["MarketID"] == old_elem["MarketID"]:
+                        # Проверяем сходятся ли коэффициенты и если они разошлись то сохраняем в базу данных
                         if new_elem["Value_0"] != old_elem["Value_0"]:
+                            id_match_select = select_sql_db(
+                                'select `id`, `number` from `matchid` where number = "' + str(new_elem["MatchID"]) + '"')
+
+                            id_match = id_match_select.get(str(new_elem["MatchID"]))
+                            find_title_dict = dict_title.get(str(new_elem["Title_0"]).upper())
+
+                            sql_insert('INSERT INTO `value`(`id_MatchID`, `id_TitleID`, `number`) '
+                                       'VALUES (' + str(id_match) + ',' + str(find_title_dict) + ',' + str(
+                                new_elem["Value_0"]) + ')')
+
                             print("val 0")
 
                         if new_elem["Value_1"] != old_elem["Value_1"]:
+                            id_match_select = select_sql_db(
+                                'select `id`, `number` from `matchid` where number = "' + str(new_elem["MatchID"]) + '"')
+
+                            id_match = id_match_select.get(str(new_elem["MatchID"]))
+                            find_title_dict = dict_title.get(str(new_elem["Title_1"]).upper())
+
+                            sql_insert('INSERT INTO `value`(`id_MatchID`, `id_TitleID`, `number`) '
+                                       'VALUES (' + str(id_match) + ',' + str(find_title_dict) + ',' + str(
+                                new_elem["Value_1"]) + ')')
+
                             print("val 1")
 
                         """
@@ -249,7 +293,7 @@ def main():
             print("not json data")
 
         print (i)
-        time.sleep(1.0)
+        time.sleep(3.0)
 
 
 def parse_courses(url):
